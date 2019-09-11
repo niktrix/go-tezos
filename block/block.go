@@ -119,7 +119,7 @@ type Contents struct {
 	Amount           string            `json:"amount,omitempty"`
 	Destination      string            `json:"destination,omitempty"`
 	Delegate         string            `json:"delegate,omitempty"`
-	Phk              string            `json:"phk,omitempty"`
+	Pkh              string            `json:"pkh,omitempty"`
 	Secret           string            `json:"secret,omitempty"`
 	Level            int               `json:"level,omitempty"`
 	ManagerPublicKey string            `json:"managerPubkey,omitempty"`
@@ -127,6 +127,7 @@ type Contents struct {
 	Period           int               `json:"period,omitempty"`
 	Proposal         string            `json:"proposal,omitempty"`
 	Proposals        []string          `json:"proposals,omitempty"`
+	PublicKey        string            `json:"public_key,omitempty"`
 	Ballot           string            `json:"ballot,omitempty"`
 	Metadata         *ContentsMetadata `json:"metadata,omitempty"`
 }
