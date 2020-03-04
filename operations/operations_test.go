@@ -5,10 +5,10 @@ package operations
 
 // 	"gotest.tools/assert"
 
-// 	"github.com/DefinitelyNotAGoat/go-tezos/account"
-// 	"github.com/DefinitelyNotAGoat/go-tezos/client"
+// 	"github.com/niktrix/go-tezos/account"
+// 	"github.com/niktrix/go-tezos/client"
 
-// 	"github.com/DefinitelyNotAGoat/go-tezos/delegate"
+// 	"github.com/niktrix/go-tezos/delegate"
 // )
 
 // func Test_CreateBatchPayment(t *testing.T) {

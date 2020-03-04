@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/DefinitelyNotAGoat/go-tezos/block"
+	"github.com/niktrix/go-tezos/block"
 
 	"github.com/pkg/errors"
 	"golang.org/x/crypto/blake2b"
@@ -13,10 +13,10 @@ import (
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/crypto/pbkdf2"
 
-	tzc "github.com/DefinitelyNotAGoat/go-tezos/client"
-	"github.com/DefinitelyNotAGoat/go-tezos/snapshot"
+	tzc "github.com/niktrix/go-tezos/client"
+	"github.com/niktrix/go-tezos/snapshot"
 
-	"github.com/DefinitelyNotAGoat/go-tezos/crypto"
+	"github.com/niktrix/go-tezos/crypto"
 )
 
 const MUTEZ = 1000000

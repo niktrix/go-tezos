@@ -1,4 +1,4 @@
-module github.com/DefinitelyNotAGoat/go-tezos
+module github.com/niktrix/go-tezos
 
 go 1.12
 

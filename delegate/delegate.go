@@ -7,11 +7,11 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/DefinitelyNotAGoat/go-tezos/account"
-	"github.com/DefinitelyNotAGoat/go-tezos/block"
-	tzc "github.com/DefinitelyNotAGoat/go-tezos/client"
-	"github.com/DefinitelyNotAGoat/go-tezos/network"
-	"github.com/DefinitelyNotAGoat/go-tezos/snapshot"
+	"github.com/niktrix/go-tezos/account"
+	"github.com/niktrix/go-tezos/block"
+	tzc "github.com/niktrix/go-tezos/client"
+	"github.com/niktrix/go-tezos/network"
+	"github.com/niktrix/go-tezos/snapshot"
 )
 
 // DelegateService is a struct wrapper for delegate related functions

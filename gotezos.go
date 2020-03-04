@@ -1,16 +1,16 @@
 package gotezos
 
 import (
-	"github.com/DefinitelyNotAGoat/go-tezos/account"
-	"github.com/DefinitelyNotAGoat/go-tezos/block"
-	tzc "github.com/DefinitelyNotAGoat/go-tezos/client"
-	"github.com/DefinitelyNotAGoat/go-tezos/contracts"
-	"github.com/DefinitelyNotAGoat/go-tezos/cycle"
-	"github.com/DefinitelyNotAGoat/go-tezos/delegate"
-	"github.com/DefinitelyNotAGoat/go-tezos/network"
-	"github.com/DefinitelyNotAGoat/go-tezos/node"
-	"github.com/DefinitelyNotAGoat/go-tezos/operations"
-	"github.com/DefinitelyNotAGoat/go-tezos/snapshot"
+	"github.com/niktrix/go-tezos/account"
+	"github.com/niktrix/go-tezos/block"
+	tzc "github.com/niktrix/go-tezos/client"
+	"github.com/niktrix/go-tezos/contracts"
+	"github.com/niktrix/go-tezos/cycle"
+	"github.com/niktrix/go-tezos/delegate"
+	"github.com/niktrix/go-tezos/network"
+	"github.com/niktrix/go-tezos/node"
+	"github.com/niktrix/go-tezos/operations"
+	"github.com/niktrix/go-tezos/snapshot"
 	"github.com/pkg/errors"
 )
 

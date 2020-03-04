@@ -1,7 +1,7 @@
 package cycle
 
 import (
-	"github.com/DefinitelyNotAGoat/go-tezos/block"
+	"github.com/niktrix/go-tezos/block"
 	"github.com/pkg/errors"
 )
 

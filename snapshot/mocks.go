@@ -1,8 +1,8 @@
 package snapshot
 
 import (
-	"github.com/DefinitelyNotAGoat/go-tezos/block"
-	"github.com/DefinitelyNotAGoat/go-tezos/network"
+	"github.com/niktrix/go-tezos/block"
+	"github.com/niktrix/go-tezos/network"
 )
 
 var (

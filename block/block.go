@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	tzc "github.com/DefinitelyNotAGoat/go-tezos/client"
+	tzc "github.com/niktrix/go-tezos/client"
 )
 
 // BlockService is a struct wrapper for all block functions
