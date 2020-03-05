@@ -239,6 +239,75 @@ func (o *OperationService) CreateBatchPayment(payments []delegate.Payment, walle
 	return operationSignatures, nil
 }
 
+// CreateBatchPayment forges batch payments and returns them ready to inject to a Tezos RPC. PaymentFee must be expressed in mutez and the max batch size allowed is 200.
+func (o *OperationService) CreateBatchPaymentHSM(payments []delegate.Payment, address string, paymentFee int, gasLimit int, batchSize int) ([]string, error) {
+
+	if batchSize > maxBatchSize {
+		batchSize = maxBatchSize
+	}
+
+	var operationSignatures []string
+	var operationUnsigned []string
+
+	// Get current branch head
+	blockHead, err := o.blockService.GetHead()
+	if err != nil {
+		return operationSignatures, errors.Wrap(err, "could not create batch payment")
+	}
+
+	// Get the counter for the payment address and increment it
+	counter, err := o.getAddressCounter(address)
+	if err != nil {
+		return operationSignatures, errors.Wrap(err, "could not create batch payment")
+	}
+	counter++
+
+	// Split our slice of []Payment into batches
+	batches := o.splitPaymentIntoBatches(payments, batchSize)
+	operationSignatures = make([]string, len(batches))
+	operationUnsigned = make([]string, len(batches))
+
+	for k := range batches {
+
+		// Convert (ie: forge) each 'Payment' into an actual Tezos transfer operation
+		operationBytes, _, newCounter, err := o.forgeOperationBytesHSM(blockHead.Hash, counter, address, batches[k], paymentFee, gasLimit)
+		if err != nil {
+			return operationUnsigned, errors.Wrap(err, "could not create batch payment")
+		}
+		counter = newCounter
+
+		// Sign gt batch of operations with the secret key; return that signature
+		// edsig, err := o.signOperationBytes(operationBytes, wallet)
+		// if err != nil {
+		// 	return operationSignatures, errors.Wrap(err, "could not create batch payment")
+		// }
+
+		// Extract and decode the bytes of the signature
+		// decodedSignature, err := o.decodeSignature(edsig)
+		// if err != nil {
+		// 	return operationSignatures, errors.Wrap(err, "could not create batch payment")
+		// }
+
+		// decodedSignature = decodedSignature[10:(len(decodedSignature))]
+
+		// // The signed bytes of gt batch
+		// fullOperation := operationBytes + decodedSignature
+
+		// We can validate gt batch against the node for any errors
+		// err = o.preApplyOperations(operationContents, edsig, blockHead)
+		// if err != nil {
+		// 	return operationSignatures, errors.Wrap(err, "could not create batch payment")
+		// }
+		// Add the signature (raw operation bytes & signature of operations) of gt batch of transfers to the returning slice
+		// gt will be used to POST to /injection/operation
+		// operationSignatures[k] = fullOperation
+		operationUnsigned[k] = operationBytes
+
+	}
+
+	return operationUnsigned, nil
+}
+
 //Sign previously forged Operation bytes using secret key of wallet
 func (o *OperationService) signOperationBytes(operationBytes string, wallet account.Wallet) (string, error) {
 
@@ -321,7 +390,53 @@ func (o *OperationService) forgeOperationBytesForActivation(branchHash string, c
 
 	return opBytes, contents, counter, nil
 }
+func (o *OperationService) forgeOperationBytesForActivationHSM(branchHash string, counter int, address string, batch []delegate.Payment) (string, Conts, int, error) {
 
+	var contents Conts
+	var combinedOps []block.Contents
+
+	//left here to display how to reveal a new wallet (needs funds to be revealed!)
+
+	combinedOps = append(combinedOps, block.Contents{Kind: "activate_account", Pkh: address, Secret: "08a53f1334ebb74289ced6a67115bbba64c0c8ea"})
+	counter++
+
+	// for k := range batch {
+
+	// 	if batch[k].Amount > 0 {
+
+	// 		operation := block.Contents{
+	// 			Kind:         "transaction",
+	// 			Source:       wallet.Address,
+	// 			Fee:          strconv.Itoa(paymentFee),
+	// 			GasLimit:     strconv.Itoa(gaslimit),
+	// 			StorageLimit: "300",
+	// 			Amount:       strconv.FormatFloat(crypto.RoundPlus(batch[k].Amount, 0), 'f', -1, 64),
+	// 			Destination:  batch[k].Address,
+	// 			Counter:      strconv.Itoa(counter),
+	// 		}
+	// 		combinedOps = append(combinedOps, operation)
+	// 		counter++
+	// 	}
+	// }
+	contents.Contents = combinedOps
+	contents.Branch = branchHash
+
+	var opBytes string
+
+	forge := "/chains/main/blocks/head/helpers/forge/operations"
+	output, err := o.tzclient.Post(forge, contents.string())
+	if err != nil {
+		return "", contents, counter, errors.Wrapf(err, "could not forge operation '%s' with contents '%s'", forge, contents.string())
+	}
+
+	err = json.Unmarshal(output, &opBytes)
+	if err != nil {
+
+		return "", contents, counter, errors.Wrapf(err, "could not forge operation '%s' with contents '%s'", forge, contents.string())
+	}
+
+	return opBytes, contents, counter, nil
+}
 func (o *OperationService) forgeOperationBytesForReveal(branchHash string, counter int, wallet account.Wallet, batch []delegate.Payment) (string, Conts, int, error) {
 
 	var contents Conts
@@ -330,6 +445,35 @@ func (o *OperationService) forgeOperationBytesForReveal(branchHash string, count
 	//left here to display how to reveal a new wallet (needs funds to be revealed!)
 
 	combinedOps = append(combinedOps, block.Contents{Kind: "reveal", PublicKey: wallet.Pk, Source: wallet.Address, Fee: strconv.Itoa(1420), GasLimit: strconv.Itoa(10600), StorageLimit: "300", Counter: strconv.Itoa(counter)})
+	counter++
+
+	contents.Contents = combinedOps
+	contents.Branch = branchHash
+
+	var opBytes string
+
+	forge := "/chains/main/blocks/head/helpers/forge/operations"
+	output, err := o.tzclient.Post(forge, contents.string())
+	if err != nil {
+		return "", contents, counter, errors.Wrapf(err, "could not forge operation '%s' with contents '%s'", forge, contents.string())
+	}
+
+	err = json.Unmarshal(output, &opBytes)
+	if err != nil {
+
+		return "", contents, counter, errors.Wrapf(err, "could not forge operation '%s' with contents '%s'", forge, contents.string())
+	}
+
+	return opBytes, contents, counter, nil
+}
+func (o *OperationService) forgeOperationBytesForRevealHSM(branchHash string, counter int, address string, publickey string, batch []delegate.Payment) (string, Conts, int, error) {
+
+	var contents Conts
+	var combinedOps []block.Contents
+
+	//left here to display how to reveal a new wallet (needs funds to be revealed!)
+
+	combinedOps = append(combinedOps, block.Contents{Kind: "reveal", PublicKey: publickey, Source: address, Fee: strconv.Itoa(1420), GasLimit: strconv.Itoa(10600), StorageLimit: "300", Counter: strconv.Itoa(counter)})
 	counter++
 
 	contents.Contents = combinedOps
@@ -506,6 +650,53 @@ func (o *OperationService) forgeOperationBytes(branchHash string, counter int, w
 			operation := block.Contents{
 				Kind:         "transaction",
 				Source:       wallet.Address,
+				Fee:          strconv.Itoa(paymentFee),
+				GasLimit:     strconv.Itoa(gaslimit),
+				StorageLimit: "0",
+				Amount:       strconv.FormatFloat(crypto.RoundPlus(batch[k].Amount, 0), 'f', -1, 64),
+				Destination:  batch[k].Address,
+				Counter:      strconv.Itoa(counter),
+			}
+			combinedOps = append(combinedOps, operation)
+			counter++
+		}
+	}
+	contents.Contents = combinedOps
+	contents.Branch = branchHash
+
+	var opBytes string
+
+	forge := "/chains/main/blocks/head/helpers/forge/operations"
+	output, err := o.tzclient.Post(forge, contents.string())
+	if err != nil {
+		return "", contents, counter, errors.Wrapf(err, "could not forge operation '%s' with contents '%s'", forge, contents.string())
+	}
+
+	err = json.Unmarshal(output, &opBytes)
+	if err != nil {
+		return "", contents, counter, errors.Wrapf(err, "could not forge operation '%s' with contents '%s'", forge, contents.string())
+	}
+
+	return opBytes, contents, counter, nil
+}
+func (o *OperationService) forgeOperationBytesHSM(branchHash string, counter int, address string, batch []delegate.Payment, paymentFee int, gaslimit int) (string, Conts, int, error) {
+
+	var contents Conts
+	var combinedOps []block.Contents
+
+	//left here to display how to reveal a new wallet (needs funds to be revealed!)
+	/**
+	  combinedOps = append(combinedOps, StructContents{Kind: "reveal", PublicKey: wallet.pk , Source: wallet.address, Fee: "0", GasLimit: "127", StorageLimit: "0", Counter: strCounter})
+	  counter++
+	**/
+
+	for k := range batch {
+
+		if batch[k].Amount > 0 {
+
+			operation := block.Contents{
+				Kind:         "transaction",
+				Source:       address,
 				Fee:          strconv.Itoa(paymentFee),
 				GasLimit:     strconv.Itoa(gaslimit),
 				StorageLimit: "0",
