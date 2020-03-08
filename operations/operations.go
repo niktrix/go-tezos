@@ -444,7 +444,7 @@ func (o *OperationService) forgeOperationBytesForReveal(branchHash string, count
 
 	//left here to display how to reveal a new wallet (needs funds to be revealed!)
 
-	combinedOps = append(combinedOps, block.Contents{Kind: "reveal", PublicKey: wallet.Pk, Source: wallet.Address, Fee: strconv.Itoa(1420), GasLimit: strconv.Itoa(10600), StorageLimit: "300", Counter: strconv.Itoa(counter)})
+	combinedOps = append(combinedOps, block.Contents{Kind: "reveal", PublicKey: wallet.Pk, Source: wallet.Address, Fee: strconv.Itoa(1420), GasLimit: strconv.Itoa(10600), StorageLimit: "2500", Counter: strconv.Itoa(counter)})
 	counter++
 
 	contents.Contents = combinedOps
@@ -473,7 +473,7 @@ func (o *OperationService) forgeOperationBytesForRevealHSM(branchHash string, co
 
 	//left here to display how to reveal a new wallet (needs funds to be revealed!)
 
-	combinedOps = append(combinedOps, block.Contents{Kind: "reveal", PublicKey: publickey, Source: address, Fee: strconv.Itoa(1420), GasLimit: strconv.Itoa(10600), StorageLimit: "300", Counter: strconv.Itoa(counter)})
+	combinedOps = append(combinedOps, block.Contents{Kind: "reveal", PublicKey: publickey, Source: address, Fee: strconv.Itoa(1420), GasLimit: strconv.Itoa(10600), StorageLimit: "2500", Counter: strconv.Itoa(counter)})
 	counter++
 
 	contents.Contents = combinedOps
@@ -652,7 +652,7 @@ func (o *OperationService) forgeOperationBytes(branchHash string, counter int, w
 				Source:       wallet.Address,
 				Fee:          strconv.Itoa(paymentFee),
 				GasLimit:     strconv.Itoa(gaslimit),
-				StorageLimit: "0",
+				StorageLimit: "2500",
 				Amount:       strconv.FormatFloat(crypto.RoundPlus(batch[k].Amount, 0), 'f', -1, 64),
 				Destination:  batch[k].Address,
 				Counter:      strconv.Itoa(counter),
@@ -699,7 +699,7 @@ func (o *OperationService) forgeOperationBytesHSM(branchHash string, counter int
 				Source:       address,
 				Fee:          strconv.Itoa(paymentFee),
 				GasLimit:     strconv.Itoa(gaslimit),
-				StorageLimit: "0",
+				StorageLimit: "2500",
 				Amount:       strconv.FormatFloat(crypto.RoundPlus(batch[k].Amount, 0), 'f', -1, 64),
 				Destination:  batch[k].Address,
 				Counter:      strconv.Itoa(counter),

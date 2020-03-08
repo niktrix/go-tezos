@@ -144,6 +144,30 @@ func (s *AccountService) CreateWallet(mnenomic string, password string) (Wallet,
 	return wallet, nil
 }
 
+// func (s *AccountService) CreateWalletECDSA(mnenomic *big.Int) (Wallet, error) {
+
+// 	privKey := ed25519.NewKeyFromSeed(seed)
+// 	pubKey := privKey.Public().(ed25519.PublicKey)
+// 	pubKeyBytes := []byte(pubKey)
+// 	signKp := keyPair{PrivKey: privKey, PubKey: pubKeyBytes}
+
+// 	address, err := s.generatePublicHash(pubKeyBytes)
+// 	if err != nil {
+// 		return Wallet{}, errors.Wrapf(err, "could not create wallet")
+// 	}
+
+// 	wallet := Wallet{
+// 		Address:  address,
+// 		Mnemonic: mnenomic,
+// 		Kp:       signKp,
+// 		Seed:     seed,
+// 		Sk:       crypto.B58cencode(privKey, crypto.Prefix_edsk),
+// 		Pk:       crypto.B58cencode(pubKeyBytes, crypto.Prefix_edpk),
+// 	}
+
+// 	return wallet, nil
+// }
+
 // ImportWallet returns an imported Wallet
 func (s *AccountService) ImportWallet(address, public, secret string) (Wallet, error) {
 
