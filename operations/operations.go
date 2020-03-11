@@ -111,6 +111,86 @@ func (o *OperationService) ActivateAccount(payments []delegate.Payment, wallet a
 	return operationSignatures, nil
 }
 
+// ActivateAccountHSM
+func (o *OperationService) ActivateAccountHSM(payments []delegate.Payment, address string) ([]string, error) {
+
+	var operationSignatures []string
+	var operationUnsigned []string
+
+	// Get current branch head
+	blockHead, err := o.blockService.GetHead()
+	if err != nil {
+		return operationSignatures, errors.Wrap(err, "could not create batch payment")
+	}
+
+	// Get the counter for the payment address and increment it
+	counter, err := o.getAddressCounter(address)
+	if err != nil {
+		return operationSignatures, errors.Wrap(err, "could not create batch payment")
+	}
+	counter++
+
+	// Split our slice of []Payment into batches
+	batches := o.splitPaymentIntoBatches(payments, 1)
+	operationSignatures = make([]string, len(batches))
+	operationUnsigned = make([]string, len(batches))
+
+	for k := range batches {
+
+		// Convert (ie: forge) each 'Payment' into an actual Tezos transfer operation
+		operationBytes, _, newCounter, err := o.forgeOperationBytesForActivationHSM(blockHead.Hash, counter, address, batches[k])
+		if err != nil {
+			return operationSignatures, errors.Wrap(err, "could not create batch payment")
+		}
+		counter = newCounter
+
+		// Add the signature (raw operation bytes & signature of operations) of gt batch of transfers to the returning slice
+		// gt will be used to POST to /injection/operation
+		operationUnsigned[k] = operationBytes
+
+	}
+
+	return operationUnsigned, nil
+}
+
+// AccountRevealHSM
+func (o *OperationService) AccountRevealHSM(payments []delegate.Payment, address string, publickey string) ([]string, error) {
+
+	var operationSignatures []string
+	var operationUnsigned []string
+
+	// Get current branch head
+	blockHead, err := o.blockService.GetHead()
+	if err != nil {
+		return operationSignatures, errors.Wrap(err, "could not create batch payment")
+	}
+
+	// Get the counter for the payment address and increment it
+	counter, err := o.getAddressCounter(address)
+	if err != nil {
+		return operationSignatures, errors.Wrap(err, "could not create batch payment")
+	}
+	counter++
+
+	// Split our slice of []Payment into batches
+	batches := o.splitPaymentIntoBatches(payments, 1)
+	operationUnsigned = make([]string, len(batches))
+
+	for k := range batches {
+
+		// Convert (ie: forge) each 'Payment' into an actual Tezos transfer operation
+		operationBytes, _, newCounter, err := o.forgeOperationBytesForRevealHSM(blockHead.Hash, counter, address, publickey, batches[k])
+		if err != nil {
+			return operationSignatures, errors.Wrap(err, "could not create batch payment")
+		}
+		counter = newCounter
+		operationUnsigned[k] = operationBytes
+
+	}
+
+	return operationUnsigned, nil
+}
+
 // AccountReveal
 func (o *OperationService) AccountReveal(payments []delegate.Payment, wallet account.Wallet) ([]string, error) {
 
@@ -718,7 +798,6 @@ func (o *OperationService) forgeOperationBytesHSM(branchHash string, counter int
 	if err != nil {
 		return "", contents, counter, errors.Wrapf(err, "could not forge operation '%s' with contents '%s'", forge, contents.string())
 	}
-
 	err = json.Unmarshal(output, &opBytes)
 	if err != nil {
 		return "", contents, counter, errors.Wrapf(err, "could not forge operation '%s' with contents '%s'", forge, contents.string())
